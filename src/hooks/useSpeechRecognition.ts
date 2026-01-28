@@ -50,6 +50,10 @@ export function useSpeechRecognition() {
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = 'es-ES';
 
+    recognitionRef.current.onstart = () => {
+      console.log('Speech recognition service started');
+    };
+
     recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
 
@@ -57,6 +61,7 @@ export function useSpeechRecognition() {
         const result = event.results[i];
         if (result.isFinal) {
           finalTranscript += result[0].transcript;
+          console.log('Transcribed:', result[0].transcript);
         }
       }
 
@@ -66,11 +71,23 @@ export function useSpeechRecognition() {
     };
 
     recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error === 'no-speech') {
-        return;
+      console.error('Speech recognition error:', event.error, event.message);
+
+      const errorMessages: Record<string, string> = {
+        'no-speech': '', // Ignore - no speech detected
+        'audio-capture': 'No se detectó micrófono. Verifica que esté conectado.',
+        'not-allowed': 'Permiso de micrófono denegado. Habilítalo en configuración.',
+        'network': 'Error de red. Verifica tu conexión a internet.',
+        'aborted': '', // Ignore - user stopped
+        'service-not-allowed': 'Servicio no disponible. Usa Chrome o Edge.',
+      };
+
+      const message = errorMessages[event.error];
+      if (message) {
+        setError(message);
+      } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        setError(`Error: ${event.error}`);
       }
-      console.error('Speech recognition error:', event.error);
-      setError(`Error de reconocimiento: ${event.error}`);
     };
 
     recognitionRef.current.onend = () => {
@@ -89,9 +106,20 @@ export function useSpeechRecognition() {
     };
   }, [isSupported, appendTranscript, setError, status]);
 
-  const startRecording = useCallback(() => {
+  const startRecording = useCallback(async () => {
     if (!recognitionRef.current) {
       setError('El reconocimiento de voz no está disponible');
+      return;
+    }
+
+    // Check microphone permission first
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop()); // Release immediately
+      console.log('Microphone permission granted');
+    } catch (err) {
+      console.error('Microphone permission error:', err);
+      setError('Permiso de micrófono denegado. Habilítalo en la configuración del navegador.');
       return;
     }
 
@@ -100,9 +128,10 @@ export function useSpeechRecognition() {
 
     try {
       recognitionRef.current.start();
+      console.log('Speech recognition started');
     } catch (error) {
       console.error('Error starting recognition:', error);
-      setError('No se pudo iniciar la grabación');
+      setError('No se pudo iniciar la grabación. Intenta recargar la página.');
     }
   }, [reset, setStatus, setError]);
 
