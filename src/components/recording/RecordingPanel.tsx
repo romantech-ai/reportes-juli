@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Loader2, Sparkles, AlertCircle, RotateCcw } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useClaudeAPI } from '@/hooks/useClaudeAPI';
@@ -5,6 +6,8 @@ import { useRecordingStore } from '@/stores/recordingStore';
 import { RecordButton } from './RecordButton';
 import { WaveformIndicator } from './WaveformIndicator';
 import { LiveTranscript } from './LiveTranscript';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { getTodayISO } from '@/lib/utils';
 
 interface RecordingPanelProps {
   onReportCreated?: (reportId: string) => void;
@@ -14,6 +17,7 @@ export function RecordingPanel({ onReportCreated }: RecordingPanelProps) {
   const { isSupported, isRecording, transcript, startRecording, stopRecording, reset } = useSpeechRecognition();
   const { isProcessing, processTranscript } = useClaudeAPI();
   const { status, error, processingProgress } = useRecordingStore();
+  const [selectedDate, setSelectedDate] = useState(getTodayISO());
 
   const handleRecordToggle = () => {
     if (isRecording) stopRecording();
@@ -21,7 +25,7 @@ export function RecordingPanel({ onReportCreated }: RecordingPanelProps) {
   };
 
   const handleProcess = async () => {
-    const report = await processTranscript(transcript);
+    const report = await processTranscript(transcript, selectedDate);
     if (report) {
       onReportCreated?.(report.id);
       reset();
@@ -58,6 +62,15 @@ export function RecordingPanel({ onReportCreated }: RecordingPanelProps) {
         </div>
 
         <div className="relative flex flex-col items-center gap-6">
+          {/* Date Picker */}
+          <div className="w-full max-w-xs">
+            <DatePicker
+              value={selectedDate}
+              onChange={setSelectedDate}
+              label="Fecha del reporte"
+            />
+          </div>
+
           {/* Recording */}
           <div className="flex flex-col items-center gap-5 pt-4 pb-2">
             <RecordButton isRecording={isRecording} onClick={handleRecordToggle} disabled={isProcessing} />

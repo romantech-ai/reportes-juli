@@ -69,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-3 border-t border-stone-100 flex-shrink-0">
-          <p className="text-xs text-stone-400 text-center">Julian - Dir. Compras</p>
+          <p className="text-xs text-stone-400 text-center">Julián - Jefe Supremo</p>
         </div>
       </aside>
     </>

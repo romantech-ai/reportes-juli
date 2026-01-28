@@ -18,8 +18,8 @@ export function HomePage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-100 to-transparent rounded-full blur-2xl" />
           <div className="relative">
             <p className="text-sm font-medium text-amber-700 mb-1 tracking-wide">Buenos días</p>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-stone-900 tracking-tight mb-2">Julian</h1>
-            <p className="text-stone-500">Dirección de Compras</p>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold text-stone-900 tracking-tight mb-2">Julián</h1>
+            <p className="text-stone-500">Jefe Supremo</p>
           </div>
         </section>
 

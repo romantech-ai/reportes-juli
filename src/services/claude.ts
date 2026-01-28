@@ -1,5 +1,5 @@
 import type { ReportDraft } from '@/types/report';
-import { getWeekRange } from '@/lib/utils';
+import { getWeekRangeFromDate, getTodayISO } from '@/lib/utils';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -57,6 +57,7 @@ El JSON debe seguir esta estructura:
 
 export async function processTranscriptWithClaude(
   transcript: string,
+  fecha?: string,
   onProgress?: (progress: number) => void
 ): Promise<ReportDraft> {
   const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
@@ -69,7 +70,8 @@ export async function processTranscriptWithClaude(
 
   onProgress?.(10);
 
-  const weekRange = getWeekRange();
+  const reportDate = fecha || getTodayISO();
+  const weekRange = getWeekRangeFromDate(reportDate);
 
   const response = await fetch(CLAUDE_API_URL, {
     method: 'POST',
@@ -87,7 +89,7 @@ export async function processTranscriptWithClaude(
         {
           role: 'user',
           content: `Semana actual: ${weekRange}
-Responsable: Julian
+Responsable: Julián
 
 Transcripción del reporte de visita de zona:
 
@@ -134,8 +136,9 @@ Genera el JSON estructurado con la información extraída.`,
       portada: {
         zona: parsed.portada?.zona || '',
         semana: weekRange,
+        fecha: reportDate,
         fabricas: parsed.portada?.fabricas || [],
-        responsable: 'Julian',
+        responsable: 'Julián',
         objetivo: parsed.portada?.objetivo || '',
       },
 

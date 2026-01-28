@@ -40,21 +40,25 @@ export function getTodayISO(): string {
 }
 
 export function getWeekRange(): string {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
+  return getWeekRangeFromDate(getTodayISO());
+}
+
+export function getWeekRangeFromDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T12:00:00'); // Add noon to avoid timezone issues
+  const dayOfWeek = date.getDay();
   // Monday = 1, Sunday = 0, so adjust to get Monday as start
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diffToMonday);
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
 
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
-  const formatShort = (date: Date) => {
-    const day = date.getDate();
+  const formatShort = (d: Date) => {
+    const day = d.getDate();
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const month = months[date.getMonth()];
+    const month = months[d.getMonth()];
     return `${day} ${month}`;
   };
 

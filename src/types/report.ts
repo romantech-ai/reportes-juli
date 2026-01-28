@@ -6,8 +6,9 @@
 export interface Portada {
   zona: string;              // "Castilla La Mancha"
   semana: string;            // "27 Ene - 2 Feb 2025"
+  fecha: string;             // "2025-01-28" (ISO date)
   fabricas: string[];        // ["CSAN", "Jaén"]
-  responsable: string;       // "Julian"
+  responsable: string;       // "Julián"
   objetivo: string;          // "Entender estructura de rutas..."
 }
 

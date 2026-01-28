@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Report, ReportDraft } from '@/types/report';
-import { generateId, getWeekRange } from '@/lib/utils';
+import { generateId, getWeekRange, getTodayISO } from '@/lib/utils';
 
 interface ReportState {
   reports: Report[];
@@ -19,8 +19,9 @@ const getDefaultReportDraft = (): ReportDraft => ({
   portada: {
     zona: '',
     semana: getWeekRange(),
+    fecha: getTodayISO(),
     fabricas: [],
-    responsable: 'Julian',
+    responsable: 'Julián',
     objetivo: '',
   },
   foto_zona: {

@@ -10,7 +10,7 @@ export function useClaudeAPI() {
   const { addReport } = useReportStore();
 
   const processTranscript = useCallback(
-    async (transcript: string): Promise<Report | null> => {
+    async (transcript: string, fecha?: string): Promise<Report | null> => {
       if (!transcript.trim()) {
         setError('No hay transcripción para procesar');
         return null;
@@ -23,6 +23,7 @@ export function useClaudeAPI() {
       try {
         const reportDraft = await processTranscriptWithClaude(
           transcript,
+          fecha,
           setProcessingProgress
         );
 

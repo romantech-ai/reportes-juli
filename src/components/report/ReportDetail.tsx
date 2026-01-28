@@ -8,6 +8,7 @@ import {
   User,
   Target,
   StickyNote,
+  Calendar,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EditableField } from './EditableField';
 import { EditableList } from './EditableList';
+import { getWeekRangeFromDate } from '@/lib/utils';
 import type { Report } from '@/types/report';
 
 interface ReportDetailProps {
@@ -60,13 +62,38 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
                 }
               />
             </div>
-            <Badge variant="default" className="text-sm flex-shrink-0">
-              {report.portada.semana}
-            </Badge>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant="default" className="text-sm flex-shrink-0">
+                {report.portada.semana}
+              </Badge>
+              <span className="text-xs text-stone-500">(calculada)</span>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+              <Calendar className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted uppercase mb-1">Fecha</p>
+                <input
+                  type="date"
+                  value={report.portada.fecha || ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    const newWeek = getWeekRangeFromDate(newDate);
+                    onUpdate({
+                      portada: {
+                        ...report.portada,
+                        fecha: newDate,
+                        semana: newWeek,
+                      },
+                    });
+                  }}
+                  className="w-full text-sm font-medium text-stone-800 bg-transparent border-none p-0 focus:outline-none focus:ring-0 cursor-pointer"
+                />
+              </div>
+            </div>
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
               <Factory className="h-5 w-5 text-amber-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -96,7 +123,7 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border col-span-1 md:col-span-2">
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border col-span-1 md:col-span-2 lg:col-span-1">
               <Target className="h-5 w-5 text-amber-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted uppercase">Objetivo</p>
