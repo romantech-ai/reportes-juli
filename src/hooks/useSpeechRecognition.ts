@@ -55,23 +55,33 @@ export function useSpeechRecognition() {
     };
 
     recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+      console.log('Got speech result, results count:', event.results.length);
       let finalTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
+        const transcript = result[0].transcript;
+        const confidence = result[0].confidence;
+        console.log(`Result ${i}: "${transcript}" (final: ${result.isFinal}, confidence: ${confidence})`);
+
         if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-          console.log('Transcribed:', result[0].transcript);
+          finalTranscript += transcript;
         }
       }
 
       if (finalTranscript) {
+        console.log('Appending final transcript:', finalTranscript);
         appendTranscript(finalTranscript);
       }
     };
 
     recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error, event.message);
+
+      // Always log for debugging
+      if (event.error === 'no-speech') {
+        console.log('No speech detected - this is normal during silence');
+      }
 
       const errorMessages: Record<string, string> = {
         'no-speech': '', // Ignore - no speech detected
@@ -91,12 +101,14 @@ export function useSpeechRecognition() {
     };
 
     recognitionRef.current.onend = () => {
+      console.log('Speech recognition ended, status:', status);
       if (status === 'recording') {
         // Restart if still recording
+        console.log('Restarting speech recognition...');
         try {
           recognitionRef.current?.start();
-        } catch {
-          // Ignore - might already be started
+        } catch (e) {
+          console.log('Restart failed (normal if already running):', e);
         }
       }
     };
