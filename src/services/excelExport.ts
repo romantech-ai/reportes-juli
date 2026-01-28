@@ -7,79 +7,69 @@ export function exportReportsToExcel(reports: Report[], filename: string = 'repo
 
   // Main reports sheet
   const mainData = reports.map((report) => ({
-    Fecha: report.fecha,
-    Región: report.region,
-    'Ciudad/Provincia': report.ciudad_provincia,
-    'Rutas Visitadas': report.rutas.numero_rutas_visitadas,
-    'Volumen (L)': report.volumenes.total_litros,
-    'Situación Actual': report.diagnostico.situacion_actual,
-    'Num. Problemas': report.diagnostico.problemas_detectados.length,
-    'Num. Soluciones': report.diagnostico.soluciones_propuestas.length,
-    Oportunidades: report.diagnostico.oportunidades,
-    'Notas Adicionales': report.notas_adicionales,
+    Zona: report.portada.zona,
+    Semana: report.portada.semana,
+    Fábricas: report.portada.fabricas.join(', '),
+    Responsable: report.portada.responsable,
+    Objetivo: report.portada.objetivo,
+    'Litros/Mes': report.foto_zona.litros_mes,
+    'Num. Rutas': report.rutas.num_rutas,
+    'L/Ruta Media': report.rutas.litros_medios_ruta,
+    'Km Media': report.rutas.distancia_media_km,
+    'Vol. Contratado': report.volumenes.volumen_contratado,
+    'Vol. Real': report.volumenes.volumen_real,
+    '% Contratos Largos': report.volumenes.pct_contratos_largos,
+    'Num. Riesgos': report.riesgos.length,
+    'Num. Oportunidades': report.oportunidades.length,
+    'Cierre Ejecutivo': report.cierre_ejecutivo,
   }));
 
   const wsMain = XLSX.utils.json_to_sheet(mainData);
   XLSX.utils.book_append_sheet(wb, wsMain, 'Reportes');
 
-  // Problems sheet
-  const problemsData: { Fecha: string; Región: string; Problema: string }[] = [];
+  // Riesgos sheet
+  const riesgosData: { Zona: string; Semana: string; Riesgo: string }[] = [];
   reports.forEach((report) => {
-    report.diagnostico.problemas_detectados.forEach((problema) => {
-      problemsData.push({
-        Fecha: report.fecha,
-        Región: report.region,
-        Problema: problema,
+    report.riesgos.forEach((riesgo) => {
+      riesgosData.push({
+        Zona: report.portada.zona,
+        Semana: report.portada.semana,
+        Riesgo: riesgo,
       });
     });
   });
 
-  if (problemsData.length > 0) {
-    const wsProblems = XLSX.utils.json_to_sheet(problemsData);
-    XLSX.utils.book_append_sheet(wb, wsProblems, 'Problemas');
+  if (riesgosData.length > 0) {
+    const wsRiesgos = XLSX.utils.json_to_sheet(riesgosData);
+    XLSX.utils.book_append_sheet(wb, wsRiesgos, 'Riesgos');
   }
 
-  // Solutions sheet
-  const solutionsData: { Fecha: string; Región: string; Solución: string }[] = [];
+  // Oportunidades sheet
+  const oportunidadesData: { Zona: string; Semana: string; Oportunidad: string }[] = [];
   reports.forEach((report) => {
-    report.diagnostico.soluciones_propuestas.forEach((solucion) => {
-      solutionsData.push({
-        Fecha: report.fecha,
-        Región: report.region,
-        Solución: solucion,
+    report.oportunidades.forEach((oportunidad) => {
+      oportunidadesData.push({
+        Zona: report.portada.zona,
+        Semana: report.portada.semana,
+        Oportunidad: oportunidad,
       });
     });
   });
 
-  if (solutionsData.length > 0) {
-    const wsSolutions = XLSX.utils.json_to_sheet(solutionsData);
-    XLSX.utils.book_append_sheet(wb, wsSolutions, 'Soluciones');
-  }
-
-  // Learnings sheet
-  const learningsData: { Fecha: string; Región: string; Aprendizaje: string }[] = [];
-  reports.forEach((report) => {
-    report.aprendizajes_clave.forEach((aprendizaje) => {
-      learningsData.push({
-        Fecha: report.fecha,
-        Región: report.region,
-        Aprendizaje: aprendizaje,
-      });
-    });
-  });
-
-  if (learningsData.length > 0) {
-    const wsLearnings = XLSX.utils.json_to_sheet(learningsData);
-    XLSX.utils.book_append_sheet(wb, wsLearnings, 'Aprendizajes');
+  if (oportunidadesData.length > 0) {
+    const wsOportunidades = XLSX.utils.json_to_sheet(oportunidadesData);
+    XLSX.utils.book_append_sheet(wb, wsOportunidades, 'Oportunidades');
   }
 
   // Rutas details sheet
   const rutasData = reports.map((report) => ({
-    Fecha: report.fecha,
-    Región: report.region,
-    'Num. Rutas': report.rutas.numero_rutas_visitadas,
-    Distribución: report.rutas.distribucion,
-    Observaciones: report.rutas.observaciones,
+    Zona: report.portada.zona,
+    Semana: report.portada.semana,
+    'Num. Rutas': report.rutas.num_rutas,
+    'Litros Media/Ruta': report.rutas.litros_medios_ruta,
+    'Distancia Media (km)': report.rutas.distancia_media_km,
+    Solapes: report.rutas.solapes,
+    Eficiencia: report.rutas.eficiencia,
   }));
 
   const wsRutas = XLSX.utils.json_to_sheet(rutasData);
@@ -87,20 +77,35 @@ export function exportReportsToExcel(reports: Report[], filename: string = 'repo
 
   // Volumes details sheet
   const volumesData = reports.map((report) => ({
-    Fecha: report.fecha,
-    Región: report.region,
-    'Total Litros': report.volumenes.total_litros,
-    'Desglose por Cliente': report.volumenes.desglose_por_cliente,
-    Tendencias: report.volumenes.tendencias,
+    Zona: report.portada.zona,
+    Semana: report.portada.semana,
+    'Litros/Mes': report.foto_zona.litros_mes,
+    'Vol. Contratado': report.volumenes.volumen_contratado,
+    'Vol. Real': report.volumenes.volumen_real,
+    '% Contratos Largos': report.volumenes.pct_contratos_largos,
+    'Concentración Ganaderos': report.volumenes.concentracion_ganaderos,
   }));
 
   const wsVolumes = XLSX.utils.json_to_sheet(volumesData);
   XLSX.utils.book_append_sheet(wb, wsVolumes, 'Volúmenes');
+
+  // Calidad sheet
+  const calidadData = reports.map((report) => ({
+    Zona: report.portada.zona,
+    Semana: report.portada.semana,
+    'Calidad Media': report.calidad.calidad_media,
+    Incidencias: report.calidad.incidencias,
+    'Impacto Estacional': report.calidad.impacto_estacional,
+  }));
+
+  const wsCalidad = XLSX.utils.json_to_sheet(calidadData);
+  XLSX.utils.book_append_sheet(wb, wsCalidad, 'Calidad');
 
   // Save
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }
 
 export function exportSingleReportToExcel(report: Report): void {
-  exportReportsToExcel([report], `reporte_${report.fecha}_${report.region || 'general'}`);
+  const zonaSafe = (report.portada.zona || 'zona').toLowerCase().replace(/\s+/g, '_');
+  exportReportsToExcel([report], `reporte_${zonaSafe}_${report.portada.semana.replace(/\s+/g, '_')}`);
 }

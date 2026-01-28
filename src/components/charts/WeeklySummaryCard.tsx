@@ -4,28 +4,28 @@ import type { Report } from '@/types/report';
 
 interface WeeklySummaryCardProps {
   reports: Report[];
-  weekNumber: number;
+  semana: string;
 }
 
-export function WeeklySummaryCard({ reports, weekNumber }: WeeklySummaryCardProps) {
+export function WeeklySummaryCard({ reports, semana }: WeeklySummaryCardProps) {
   const totalLitros = reports.reduce(
-    (sum, r) => sum + r.volumenes.total_litros,
+    (sum, r) => sum + r.foto_zona.litros_mes,
     0
   );
   const totalRutas = reports.reduce(
-    (sum, r) => sum + r.rutas.numero_rutas_visitadas,
+    (sum, r) => sum + r.rutas.num_rutas,
     0
   );
-  const allProblems = reports.flatMap((r) => r.diagnostico.problemas_detectados);
-  const allSolutions = reports.flatMap((r) => r.diagnostico.soluciones_propuestas);
-  const uniqueRegions = [...new Set(reports.map((r) => r.region).filter(Boolean))];
+  const allRiesgos = reports.flatMap((r) => r.riesgos);
+  const allOportunidades = reports.flatMap((r) => r.oportunidades);
+  const uniqueZonas = [...new Set(reports.map((r) => r.portada.zona).filter(Boolean))];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          Semana {weekNumber}
+          {semana}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -45,31 +45,31 @@ export function WeeklySummaryCard({ reports, weekNumber }: WeeklySummaryCardProp
           <div className="text-center p-3 bg-danger/5 rounded-lg">
             <AlertCircle className="h-5 w-5 mx-auto text-danger mb-1" />
             <p className="text-2xl font-bold text-foreground">
-              {allProblems.length}
+              {allRiesgos.length}
             </p>
-            <p className="text-xs text-muted">Problemas detectados</p>
+            <p className="text-xs text-muted">Riesgos detectados</p>
           </div>
           <div className="text-center p-3 bg-success/5 rounded-lg">
             <CheckCircle2 className="h-5 w-5 mx-auto text-success mb-1" />
             <p className="text-2xl font-bold text-foreground">
-              {allSolutions.length}
+              {allOportunidades.length}
             </p>
-            <p className="text-xs text-muted">Soluciones propuestas</p>
+            <p className="text-xs text-muted">Oportunidades</p>
           </div>
         </div>
 
-        {uniqueRegions.length > 0 && (
+        {uniqueZonas.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-muted uppercase tracking-wide mb-2">
-              Regiones visitadas
+              Zonas visitadas
             </p>
             <div className="flex flex-wrap gap-2">
-              {uniqueRegions.map((region) => (
+              {uniqueZonas.map((zona) => (
                 <span
-                  key={region}
+                  key={zona}
                   className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
                 >
-                  {region}
+                  {zona}
                 </span>
               ))}
             </div>

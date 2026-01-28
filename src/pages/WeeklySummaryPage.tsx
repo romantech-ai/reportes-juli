@@ -6,68 +6,61 @@ import { ExportModal } from '@/components/export';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useReportStore } from '@/stores/reportStore';
-import { getWeekNumber } from '@/lib/utils';
 import { useState } from 'react';
 
 export function WeeklySummaryPage() {
   const { reports } = useReportStore();
   const [showExportModal, setShowExportModal] = useState(false);
 
-  // Group reports by week
+  // Group reports by semana
   const weeklyData = useMemo(() => {
-    const weeks: Record<number, typeof reports> = {};
+    const weeks: Record<string, typeof reports> = {};
 
     reports.forEach((report) => {
-      const week = getWeekNumber(report.fecha);
-      if (!weeks[week]) {
-        weeks[week] = [];
+      const semana = report.portada.semana;
+      if (!weeks[semana]) {
+        weeks[semana] = [];
       }
-      weeks[week].push(report);
+      weeks[semana].push(report);
     });
 
     return Object.entries(weeks)
-      .map(([weekNum, weekReports]) => ({
-        weekNumber: parseInt(weekNum),
+      .map(([semana, weekReports]) => ({
+        semana,
         reports: weekReports,
       }))
-      .sort((a, b) => b.weekNumber - a.weekNumber);
+      .sort((a, b) => b.semana.localeCompare(a.semana));
   }, [reports]);
 
   // Aggregate stats
   const totalStats = useMemo(() => {
     return {
       totalReports: reports.length,
-      totalLitros: reports.reduce((sum, r) => sum + r.volumenes.total_litros, 0),
-      totalRutas: reports.reduce(
-        (sum, r) => sum + r.rutas.numero_rutas_visitadas,
-        0
-      ),
-      totalProblems: reports.reduce(
-        (sum, r) => sum + r.diagnostico.problemas_detectados.length,
-        0
-      ),
-      totalSolutions: reports.reduce(
-        (sum, r) => sum + r.diagnostico.soluciones_propuestas.length,
+      totalLitros: reports.reduce((sum, r) => sum + r.foto_zona.litros_mes, 0),
+      totalRutas: reports.reduce((sum, r) => sum + r.rutas.num_rutas, 0),
+      totalRiesgos: reports.reduce((sum, r) => sum + r.riesgos.length, 0),
+      totalOportunidades: reports.reduce(
+        (sum, r) => sum + r.oportunidades.length,
         0
       ),
     };
   }, [reports]);
 
-  // Top problems (most mentioned)
-  const topProblems = useMemo(() => {
-    const problemCounts: Record<string, number> = {};
+  // Top riesgos (most mentioned)
+  const topRiesgos = useMemo(() => {
+    const riesgoCounts: Record<string, number> = {};
     reports.forEach((report) => {
-      report.diagnostico.problemas_detectados.forEach((problem) => {
-        const key = problem.toLowerCase().trim();
-        problemCounts[key] = (problemCounts[key] || 0) + 1;
+      report.riesgos.forEach((riesgo: string) => {
+        const key = riesgo.toLowerCase().trim();
+        riesgoCounts[key] = (riesgoCounts[key] || 0) + 1;
       });
     });
 
-    return Object.entries(problemCounts)
+    return Object.entries(riesgoCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([problem, count]) => ({
-        problem: problem.charAt(0).toUpperCase() + problem.slice(1),
+      .map(([riesgo, count]) => ({
+        riesgo: riesgo.charAt(0).toUpperCase() + riesgo.slice(1),
         count,
       }));
   }, [reports]);
@@ -101,7 +94,7 @@ export function WeeklySummaryPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
-                  Estadísticas Totales (21 días)
+                  Estadísticas Totales
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -126,15 +119,15 @@ export function WeeklySummaryPage() {
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-danger">
-                      {totalStats.totalProblems}
+                      {totalStats.totalRiesgos}
                     </p>
-                    <p className="text-xs text-muted">Problemas</p>
+                    <p className="text-xs text-muted">Riesgos</p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-success">
-                      {totalStats.totalSolutions}
+                      {totalStats.totalOportunidades}
                     </p>
-                    <p className="text-xs text-muted">Soluciones</p>
+                    <p className="text-xs text-muted">Oportunidades</p>
                   </div>
                 </div>
               </CardContent>
@@ -143,30 +136,30 @@ export function WeeklySummaryPage() {
             {/* Volumes Chart */}
             <VolumesChart reports={reports} />
 
-            {/* Top Problems */}
-            {topProblems.length > 0 && (
+            {/* Top Riesgos */}
+            {topRiesgos.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">
-                    Problemas Más Frecuentes
+                    Riesgos Más Frecuentes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {topProblems.map(({ problem, count }, index) => (
+                    {topRiesgos.map(({ riesgo, count }, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between"
                       >
                         <span className="text-sm text-foreground flex-1 mr-4">
-                          {problem}
+                          {riesgo}
                         </span>
                         <div className="flex items-center gap-2">
                           <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-danger rounded-full"
                               style={{
-                                width: `${(count / (topProblems[0]?.count || 1)) * 100}%`,
+                                width: `${(count / (topRiesgos[0]?.count || 1)) * 100}%`,
                               }}
                             />
                           </div>
@@ -186,10 +179,10 @@ export function WeeklySummaryPage() {
               <h3 className="text-lg font-semibold text-foreground">
                 Por Semana
               </h3>
-              {weeklyData.map(({ weekNumber, reports: weekReports }) => (
+              {weeklyData.map(({ semana, reports: weekReports }) => (
                 <WeeklySummaryCard
-                  key={weekNumber}
-                  weekNumber={weekNumber}
+                  key={semana}
+                  semana={semana}
                   reports={weekReports}
                 />
               ))}

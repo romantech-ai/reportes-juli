@@ -1,35 +1,77 @@
+// ============================================
+// Formato Ejecutivo de Reportes - Industria Lechera
+// ============================================
+
+// 1. Portada
+export interface Portada {
+  zona: string;              // "Castilla La Mancha"
+  semana: string;            // "27 Ene - 2 Feb 2025"
+  fabricas: string[];        // ["CSAN", "Jaén"]
+  responsable: string;       // "Julian"
+  objetivo: string;          // "Entender estructura de rutas..."
+}
+
+// 2. Foto General de la Zona
+export interface FotoZona {
+  litros_mes: number;        // 500000
+  fabricas_destino: string;  // "CSAN y Jaén"
+  peso_estrategico: string;  // "Zona crítica en verano"
+}
+
+// 3. Rutas y Logística
 export interface Rutas {
-  numero_rutas_visitadas: number;
-  distribucion: string;
-  observaciones: string;
+  num_rutas: number;
+  litros_medios_ruta: number;
+  distancia_media_km: number;
+  solapes: string;           // "Solape entre R1 y R3 en zona norte"
+  eficiencia: string;        // "2 rutas con ocupación <80%"
 }
 
+// 4. Volúmenes y Contratos
 export interface Volumenes {
-  total_litros: number;
-  desglose_por_cliente: string;
-  tendencias: string;
+  volumen_contratado: number;
+  volumen_real: number;
+  pct_contratos_largos: number;  // 65
+  concentracion_ganaderos: string;
 }
 
-export interface Diagnostico {
-  situacion_actual: string;
-  problemas_detectados: string[];
-  soluciones_propuestas: string[];
-  oportunidades: string;
+// 5. Calidad y Estacionalidad
+export interface Calidad {
+  calidad_media: string;
+  incidencias: string;
+  impacto_estacional: string;
 }
 
+// Reporte Ejecutivo Principal
 export interface Report {
   id: string;
-  fecha: string;
-  region: string;
-  ciudad_provincia: string;
-  rutas: Rutas;
-  volumenes: Volumenes;
-  diagnostico: Diagnostico;
-  aprendizajes_clave: string[];
-  notas_adicionales: string;
-  transcripcion_original: string;
   createdAt: string;
   updatedAt: string;
+  transcripcion_original: string;
+
+  // 1. Portada
+  portada: Portada;
+
+  // 2. Foto General
+  foto_zona: FotoZona;
+
+  // 3. Rutas y Logística
+  rutas: Rutas;
+
+  // 4. Volúmenes y Contratos
+  volumenes: Volumenes;
+
+  // 5. Calidad
+  calidad: Calidad;
+
+  // 6. Riesgos Detectados
+  riesgos: string[];
+
+  // 7. Oportunidades/Propuestas
+  oportunidades: string[];
+
+  // 8. Cierre Ejecutivo
+  cierre_ejecutivo: string;
 }
 
 export type ReportDraft = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;
@@ -41,7 +83,7 @@ export interface WeeklySummary {
   totalReports: number;
   totalLitros: number;
   totalRutas: number;
-  regiones: string[];
-  mainProblems: string[];
-  mainSolutions: string[];
+  zonas: string[];
+  mainRiesgos: string[];
+  mainOportunidades: string[];
 }

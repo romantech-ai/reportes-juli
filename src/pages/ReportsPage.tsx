@@ -9,13 +9,13 @@ import { useReportStore } from '@/stores/reportStore';
 export function ReportsPage() {
   const { reports, deleteReport } = useReportStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedZona, setSelectedZona] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
 
-  // Get unique regions
-  const regions = useMemo(() => {
-    const uniqueRegions = [...new Set(reports.map((r) => r.region).filter(Boolean))];
-    return uniqueRegions.sort();
+  // Get unique zonas
+  const zonas = useMemo(() => {
+    const uniqueZonas = [...new Set(reports.map((r) => r.portada.zona).filter(Boolean))];
+    return uniqueZonas.sort();
   }, [reports]);
 
   // Filter reports
@@ -25,43 +25,39 @@ export function ReportsPage() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
-          report.region.toLowerCase().includes(query) ||
-          report.ciudad_provincia.toLowerCase().includes(query) ||
-          report.diagnostico.situacion_actual.toLowerCase().includes(query) ||
-          report.diagnostico.problemas_detectados.some((p) =>
-            p.toLowerCase().includes(query)
-          ) ||
-          report.diagnostico.soluciones_propuestas.some((s) =>
-            s.toLowerCase().includes(query)
-          );
+          report.portada.zona.toLowerCase().includes(query) ||
+          report.portada.objetivo.toLowerCase().includes(query) ||
+          report.cierre_ejecutivo.toLowerCase().includes(query) ||
+          report.riesgos.some((r: string) => r.toLowerCase().includes(query)) ||
+          report.oportunidades.some((o: string) => o.toLowerCase().includes(query)) ||
+          report.portada.fabricas.some((f: string) => f.toLowerCase().includes(query));
 
         if (!matchesSearch) return false;
       }
 
-      // Region filter
-      if (selectedRegion && report.region !== selectedRegion) {
+      // Zona filter
+      if (selectedZona && report.portada.zona !== selectedZona) {
         return false;
       }
 
       return true;
     });
-  }, [reports, searchQuery, selectedRegion]);
+  }, [reports, searchQuery, selectedZona]);
 
-  // Group reports by date
-  const reportsByDate = useMemo(() => {
+  // Group reports by semana
+  const reportsBySemana = useMemo(() => {
     const grouped: Record<string, typeof reports> = {};
     filteredReports.forEach((report) => {
-      if (!grouped[report.fecha]) {
-        grouped[report.fecha] = [];
+      const semana = report.portada.semana;
+      if (!grouped[semana]) {
+        grouped[semana] = [];
       }
-      grouped[report.fecha].push(report);
+      grouped[semana].push(report);
     });
     return grouped;
   }, [filteredReports]);
 
-  const sortedDates = Object.keys(reportsByDate).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+  const sortedSemanas = Object.keys(reportsBySemana).sort().reverse();
 
   return (
     <PageContainer>
@@ -88,37 +84,37 @@ export function ReportsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
-              placeholder="Buscar en reportes..."
+              placeholder="Buscar por zona, riesgos, oportunidades..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
 
-          {regions.length > 0 && (
+          {zonas.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto pb-2">
               <Filter className="h-4 w-4 text-muted flex-shrink-0" />
               <button
-                onClick={() => setSelectedRegion(null)}
+                onClick={() => setSelectedZona(null)}
                 className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  selectedRegion === null
+                  selectedZona === null
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 Todas
               </button>
-              {regions.map((region) => (
+              {zonas.map((zona) => (
                 <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
+                  key={zona}
+                  onClick={() => setSelectedZona(zona)}
                   className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
-                    selectedRegion === region
+                    selectedZona === zona
                       ? 'bg-primary text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {region}
+                  {zona}
                 </button>
               ))}
             </div>
@@ -127,16 +123,19 @@ export function ReportsPage() {
 
         {/* Reports List */}
         {filteredReports.length > 0 ? (
-          <div className="space-y-4">
-            {sortedDates.map((date) => (
-              <div key={date}>
-                {reportsByDate[date].map((report) => (
-                  <ReportCard
-                    key={report.id}
-                    report={report}
-                    onDelete={deleteReport}
-                  />
-                ))}
+          <div className="space-y-6">
+            {sortedSemanas.map((semana) => (
+              <div key={semana}>
+                <h3 className="text-sm font-medium text-muted mb-3">{semana}</h3>
+                <div className="space-y-4">
+                  {reportsBySemana[semana].map((report) => (
+                    <ReportCard
+                      key={report.id}
+                      report={report}
+                      onDelete={deleteReport}
+                    />
+                  ))}
+                </div>
               </div>
             ))}
           </div>

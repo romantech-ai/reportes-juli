@@ -110,13 +110,13 @@ export function HomePage() {
               </div>
               <div className="bg-white rounded-xl p-4 border border-stone-200 card-shadow text-center">
                 <p className="font-display text-2xl font-semibold text-green-700">
-                  {reports.reduce((sum, r) => sum + r.rutas.numero_rutas_visitadas, 0)}
+                  {reports.reduce((sum, r) => sum + r.rutas.num_rutas, 0)}
                 </p>
                 <p className="text-xs text-stone-500 mt-1">Rutas</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-stone-200 card-shadow text-center">
                 <p className="font-display text-2xl font-semibold text-slate-700">
-                  {Math.round(reports.reduce((sum, r) => sum + r.volumenes.total_litros, 0) / 1000)}k
+                  {Math.round(reports.reduce((sum, r) => sum + r.foto_zona.litros_mes, 0) / 1000)}k
                 </p>
                 <p className="text-xs text-stone-500 mt-1">Litros</p>
               </div>

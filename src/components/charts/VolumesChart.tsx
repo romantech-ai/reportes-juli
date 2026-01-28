@@ -9,7 +9,6 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Report } from '@/types/report';
-import { formatShortDate } from '@/lib/utils';
 
 interface VolumesChartProps {
   reports: Report[];
@@ -18,11 +17,11 @@ interface VolumesChartProps {
 export function VolumesChart({ reports }: VolumesChartProps) {
   const data = reports
     .slice()
-    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     .map((report) => ({
-      fecha: formatShortDate(report.fecha),
-      litros: report.volumenes.total_litros,
-      rutas: report.rutas.numero_rutas_visitadas,
+      zona: report.portada.zona || 'Sin zona',
+      litros: report.foto_zona.litros_mes,
+      rutas: report.rutas.num_rutas,
     }));
 
   if (data.length === 0) {
@@ -32,7 +31,7 @@ export function VolumesChart({ reports }: VolumesChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Volúmenes por Día</CardTitle>
+        <CardTitle className="text-base">Volúmenes por Zona</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[250px]">
@@ -40,7 +39,7 @@ export function VolumesChart({ reports }: VolumesChartProps) {
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
-                dataKey="fecha"
+                dataKey="zona"
                 tick={{ fontSize: 12 }}
                 stroke="#64748b"
               />

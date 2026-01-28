@@ -1,42 +1,58 @@
 import type { ReportDraft } from '@/types/report';
-import { getTodayISO } from '@/lib/utils';
+import { getWeekRange } from '@/lib/utils';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
-const SYSTEM_PROMPT = `Eres un asistente especializado en estructurar reportes de visitas comerciales para la industria de distribución de combustibles/lubricantes en España.
+const SYSTEM_PROMPT = `Eres un analista de compras de leche para una empresa láctea española. Extrae información del reporte de visita de zona y estructura en formato ejecutivo profesional.
 
-Tu tarea es analizar la transcripción de voz del comercial y extraer información estructurada en formato JSON.
+TONO OBLIGATORIO:
+- Objetivo y profesional, sin subjetividad
+- NUNCA uses: "yo creo", "me parece", "pienso que", "en mi opinión"
+- USA: "se observa", "se detecta", "se recomienda", "se identifica", "se constata"
 
-IMPORTANTE:
-- Extrae SOLO la información mencionada explícitamente en la transcripción
-- Si algún dato no está mencionado, usa valores por defecto sensatos o strings vacíos
-- Los problemas y soluciones deben ser arrays de strings concisos
-- Mantén un tono profesional y objetivo, como un diagnóstico clínico
-- Responde ÚNICAMENTE con el JSON, sin explicaciones adicionales
+VOCABULARIO PREFERIDO:
+consolidación, optimización, solape, eficiencia, vencimiento, concentración, estacionalidad, ocupación, recogida, ganadero, cisterna, ruta, fábrica destino
 
-El JSON debe seguir exactamente esta estructura:
+INSTRUCCIONES:
+1. Extrae SOLO información explícitamente mencionada en la transcripción
+2. Si un dato no está mencionado, usa valores por defecto sensatos o strings vacíos
+3. Los riesgos y oportunidades deben ser arrays de strings concisos y accionables
+4. El CIERRE EJECUTIVO debe ser máximo 5 líneas resumiendo lo más importante para un director de compras
+5. Responde ÚNICAMENTE con el JSON, sin explicaciones
+
+El JSON debe seguir esta estructura:
 {
-  "fecha": "YYYY-MM-DD",
-  "region": "nombre de la región visitada",
-  "ciudad_provincia": "ciudad o provincia específica",
+  "portada": {
+    "zona": "nombre de la zona visitada",
+    "fabricas": ["fábricas destino mencionadas"],
+    "objetivo": "objetivo principal de la visita"
+  },
+  "foto_zona": {
+    "litros_mes": número estimado de litros mensuales,
+    "fabricas_destino": "fábricas que reciben leche de esta zona",
+    "peso_estrategico": "importancia estratégica de la zona"
+  },
   "rutas": {
-    "numero_rutas_visitadas": número,
-    "distribucion": "descripción de la distribución de rutas",
-    "observaciones": "observaciones sobre las rutas"
+    "num_rutas": número de rutas,
+    "litros_medios_ruta": litros promedio por ruta,
+    "distancia_media_km": distancia media en km,
+    "solapes": "descripción de solapes entre rutas si existen",
+    "eficiencia": "observaciones sobre eficiencia de rutas"
   },
   "volumenes": {
-    "total_litros": número,
-    "desglose_por_cliente": "descripción del desglose",
-    "tendencias": "tendencias observadas"
+    "volumen_contratado": litros contratados,
+    "volumen_real": litros reales recogidos,
+    "pct_contratos_largos": porcentaje de contratos a largo plazo,
+    "concentracion_ganaderos": "descripción de concentración de ganaderos"
   },
-  "diagnostico": {
-    "situacion_actual": "resumen de la situación actual del territorio/mercado",
-    "problemas_detectados": ["problema 1", "problema 2"],
-    "soluciones_propuestas": ["solución 1", "solución 2"],
-    "oportunidades": "oportunidades de negocio identificadas"
+  "calidad": {
+    "calidad_media": "descripción de calidad media",
+    "incidencias": "incidencias de calidad detectadas",
+    "impacto_estacional": "variaciones estacionales observadas"
   },
-  "aprendizajes_clave": ["aprendizaje 1", "aprendizaje 2"],
-  "notas_adicionales": "cualquier información adicional relevante"
+  "riesgos": ["riesgo 1 priorizado", "riesgo 2"],
+  "oportunidades": ["oportunidad/propuesta 1", "oportunidad 2"],
+  "cierre_ejecutivo": "Resumen ejecutivo de máximo 5 líneas para dirección de compras"
 }`;
 
 export async function processTranscriptWithClaude(
@@ -53,6 +69,8 @@ export async function processTranscriptWithClaude(
 
   onProgress?.(10);
 
+  const weekRange = getWeekRange();
+
   const response = await fetch(CLAUDE_API_URL, {
     method: 'POST',
     headers: {
@@ -68,9 +86,10 @@ export async function processTranscriptWithClaude(
       messages: [
         {
           role: 'user',
-          content: `Fecha de hoy: ${getTodayISO()}
+          content: `Semana actual: ${weekRange}
+Responsable: Julian
 
-Transcripción del reporte de visita comercial:
+Transcripción del reporte de visita de zona:
 
 "${transcript}"
 
@@ -109,28 +128,52 @@ Genera el JSON estructurado con la información extraída.`,
     onProgress?.(100);
 
     return {
-      fecha: parsed.fecha || getTodayISO(),
-      region: parsed.region || '',
-      ciudad_provincia: parsed.ciudad_provincia || '',
-      rutas: {
-        numero_rutas_visitadas: parsed.rutas?.numero_rutas_visitadas || 0,
-        distribucion: parsed.rutas?.distribucion || '',
-        observaciones: parsed.rutas?.observaciones || '',
-      },
-      volumenes: {
-        total_litros: parsed.volumenes?.total_litros || 0,
-        desglose_por_cliente: parsed.volumenes?.desglose_por_cliente || '',
-        tendencias: parsed.volumenes?.tendencias || '',
-      },
-      diagnostico: {
-        situacion_actual: parsed.diagnostico?.situacion_actual || '',
-        problemas_detectados: parsed.diagnostico?.problemas_detectados || [],
-        soluciones_propuestas: parsed.diagnostico?.soluciones_propuestas || [],
-        oportunidades: parsed.diagnostico?.oportunidades || '',
-      },
-      aprendizajes_clave: parsed.aprendizajes_clave || [],
-      notas_adicionales: parsed.notas_adicionales || '',
       transcripcion_original: transcript,
+
+      // 1. Portada
+      portada: {
+        zona: parsed.portada?.zona || '',
+        semana: weekRange,
+        fabricas: parsed.portada?.fabricas || [],
+        responsable: 'Julian',
+        objetivo: parsed.portada?.objetivo || '',
+      },
+
+      // 2. Foto General
+      foto_zona: {
+        litros_mes: parsed.foto_zona?.litros_mes || 0,
+        fabricas_destino: parsed.foto_zona?.fabricas_destino || '',
+        peso_estrategico: parsed.foto_zona?.peso_estrategico || '',
+      },
+
+      // 3. Rutas
+      rutas: {
+        num_rutas: parsed.rutas?.num_rutas || 0,
+        litros_medios_ruta: parsed.rutas?.litros_medios_ruta || 0,
+        distancia_media_km: parsed.rutas?.distancia_media_km || 0,
+        solapes: parsed.rutas?.solapes || '',
+        eficiencia: parsed.rutas?.eficiencia || '',
+      },
+
+      // 4. Volúmenes
+      volumenes: {
+        volumen_contratado: parsed.volumenes?.volumen_contratado || 0,
+        volumen_real: parsed.volumenes?.volumen_real || 0,
+        pct_contratos_largos: parsed.volumenes?.pct_contratos_largos || 0,
+        concentracion_ganaderos: parsed.volumenes?.concentracion_ganaderos || '',
+      },
+
+      // 5. Calidad
+      calidad: {
+        calidad_media: parsed.calidad?.calidad_media || '',
+        incidencias: parsed.calidad?.incidencias || '',
+        impacto_estacional: parsed.calidad?.impacto_estacional || '',
+      },
+
+      // 6-8. Análisis
+      riesgos: parsed.riesgos || [],
+      oportunidades: parsed.oportunidades || [],
+      cierre_ejecutivo: parsed.cierre_ejecutivo || '',
     };
   } catch {
     throw new Error('No se pudo procesar la respuesta de la IA');
