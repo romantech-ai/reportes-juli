@@ -33,6 +33,7 @@ declare global {
 
 export function useSpeechRecognition() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const isRecordingRef = useRef(false); // Use ref to avoid stale closure
   const { status, transcript, setStatus, appendTranscript, setError, reset } =
     useRecordingStore();
 
@@ -40,32 +41,33 @@ export function useSpeechRecognition() {
     typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
+  // Initialize speech recognition once
   useEffect(() => {
     if (!isSupported) return;
 
     const SpeechRecognitionAPI =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognitionAPI();
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = true;
-    recognitionRef.current.lang = 'es-ES';
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
 
-    recognitionRef.current.onstart = () => {
+    recognition.onstart = () => {
       console.log('Speech recognition service started');
     };
 
-    recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       console.log('Got speech result, results count:', event.results.length);
       let finalTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        const transcript = result[0].transcript;
+        const text = result[0].transcript;
         const confidence = result[0].confidence;
-        console.log(`Result ${i}: "${transcript}" (final: ${result.isFinal}, confidence: ${confidence})`);
+        console.log(`Result ${i}: "${text}" (final: ${result.isFinal}, confidence: ${confidence})`);
 
         if (result.isFinal) {
-          finalTranscript += transcript;
+          finalTranscript += text;
         }
       }
 
@@ -75,16 +77,15 @@ export function useSpeechRecognition() {
       }
     };
 
-    recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error, event.message);
 
-      // Always log for debugging
       if (event.error === 'no-speech') {
         console.log('No speech detected - this is normal during silence');
+        return; // Don't show error for no-speech
       }
 
       const errorMessages: Record<string, string> = {
-        'no-speech': '', // Ignore - no speech detected
         'audio-capture': 'No se detectó micrófono. Verifica que esté conectado.',
         'not-allowed': 'Permiso de micrófono denegado. Habilítalo en configuración.',
         'network': 'Error de red. Verifica tu conexión a internet.',
@@ -95,28 +96,30 @@ export function useSpeechRecognition() {
       const message = errorMessages[event.error];
       if (message) {
         setError(message);
-      } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      } else if (event.error !== 'aborted') {
         setError(`Error: ${event.error}`);
       }
     };
 
-    recognitionRef.current.onend = () => {
-      console.log('Speech recognition ended, status:', status);
-      if (status === 'recording') {
+    recognition.onend = () => {
+      console.log('Speech recognition ended, isRecordingRef:', isRecordingRef.current);
+      if (isRecordingRef.current) {
         // Restart if still recording
         console.log('Restarting speech recognition...');
         try {
-          recognitionRef.current?.start();
+          recognition.start();
         } catch (e) {
-          console.log('Restart failed (normal if already running):', e);
+          console.log('Restart failed:', e);
         }
       }
     };
 
+    recognitionRef.current = recognition;
+
     return () => {
-      recognitionRef.current?.abort();
+      recognition.abort();
     };
-  }, [isSupported, appendTranscript, setError, status]);
+  }, [isSupported, appendTranscript, setError]); // Remove status from dependencies
 
   const startRecording = useCallback(async () => {
     if (!recognitionRef.current) {
@@ -127,7 +130,7 @@ export function useSpeechRecognition() {
     // Check microphone permission first
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop()); // Release immediately
+      stream.getTracks().forEach(track => track.stop());
       console.log('Microphone permission granted');
     } catch (err) {
       console.error('Microphone permission error:', err);
@@ -136,6 +139,7 @@ export function useSpeechRecognition() {
     }
 
     reset();
+    isRecordingRef.current = true; // Set ref before starting
     setStatus('recording');
 
     try {
@@ -143,13 +147,16 @@ export function useSpeechRecognition() {
       console.log('Speech recognition started');
     } catch (error) {
       console.error('Error starting recognition:', error);
+      isRecordingRef.current = false;
       setError('No se pudo iniciar la grabación. Intenta recargar la página.');
     }
   }, [reset, setStatus, setError]);
 
   const stopRecording = useCallback(() => {
+    console.log('Stopping recording');
+    isRecordingRef.current = false; // Set ref before stopping
+    setStatus('idle');
     if (recognitionRef.current) {
-      setStatus('idle');
       recognitionRef.current.stop();
     }
   }, [setStatus]);
