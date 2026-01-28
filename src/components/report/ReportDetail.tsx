@@ -29,14 +29,21 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+      <div className="flex items-center justify-between gap-3 pb-2">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="text-stone-600 hover:text-stone-900"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
-        <Button onClick={onExport}>
+        <Button
+          onClick={onExport}
+          className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
+        >
           <Download className="h-4 w-4 mr-2" />
-          Exportar PDF
+          Exportar
         </Button>
       </div>
 

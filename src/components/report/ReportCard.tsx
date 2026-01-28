@@ -10,14 +10,17 @@ import {
   Factory,
   AlertTriangle,
   Lightbulb,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ExecutiveSection } from './ExecutiveSection';
+import { exportReportToPDF } from '@/services/pdfExport';
 import type { Report } from '@/types/report';
 
 interface ReportCardProps {
   report: Report;
   onDelete?: (id: string) => void;
+  onExport?: (id: string) => void;
   expanded?: boolean;
 }
 
@@ -247,17 +250,30 @@ export function ReportCard({
               Ver detalle
               <ArrowUpRight className="h-4 w-4" />
             </button>
-            {onDelete && (
+            <div className="flex items-center gap-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('¿Eliminar este reporte?')) onDelete(report.id);
+                  exportReportToPDF(report);
                 }}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-stone-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+                title="Exportar PDF"
               >
-                <Trash2 className="h-4 w-4" />
+                <Download className="h-4 w-4" />
               </button>
-            )}
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm('¿Eliminar este reporte?')) onDelete(report.id);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Eliminar"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </footer>
 
           {report.transcripcion_original && (
