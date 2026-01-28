@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+html {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: #f5f5f4;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: Georgia, serif;
+}
+
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Fade up animation */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out forwards;
+}
+
+/* Pulse ring for record button */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(234, 88, 12, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Sound wave animation */
+@keyframes sound-wave {
+  0%, 100% { height: 4px; }
+  50% { height: var(--wave-height, 32px); }
+}
+
+.sound-wave-bar {
+  animation: sound-wave 0.6s ease-in-out infinite;
+}
+
+/* Progress bar */
+.progress-bar {
+  background: #e5e5e5;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: linear-gradient(to right, #d97706, #f59e0b);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+
+/* Elegant progress bar */
+.progress-elegant {
+  background: #e7e5e4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-elegant-bar {
+  background: linear-gradient(to right, #d97706, #f59e0b);
+  border-radius: 999px;
+  transition: width 0.3s ease-out;
+}
+
+/* Diagnostic sections */
+.diagnostic-situacion {
+  background: #f8fafc;
+  border-left: 3px solid #64748b;
+}
+
+.diagnostic-problemas {
+  background: #fff7ed;
+  border-left: 3px solid #f97316;
+}
+
+.diagnostic-soluciones {
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+}
+
+.diagnostic-oportunidades {
+  background: #fefce8;
+  border-left: 3px solid #eab308;
+}
+
+/* Legacy diagnostic classes */
+.diagnostic-blue { background: #eff6ff; border-left: 3px solid #3b82f6; }
+.diagnostic-red { background: #fef2f2; border-left: 3px solid #ef4444; }
+.diagnostic-green { background: #f0fdf4; border-left: 3px solid #22c55e; }
+.diagnostic-yellow { background: #fefce8; border-left: 3px solid #eab308; }
+
+/* Stagger children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-up 0.4s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.25s; }
