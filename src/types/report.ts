@@ -72,6 +72,9 @@ export interface Report {
 
   // 8. Cierre Ejecutivo
   cierre_ejecutivo: string;
+
+  // 9. Notas Adicionales (escritas a mano)
+  notas_adicionales: string;
 }
 
 export type ReportDraft = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;

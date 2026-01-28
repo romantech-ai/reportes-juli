@@ -174,6 +174,7 @@ Genera el JSON estructurado con la información extraída.`,
       riesgos: parsed.riesgos || [],
       oportunidades: parsed.oportunidades || [],
       cierre_ejecutivo: parsed.cierre_ejecutivo || '',
+      notas_adicionales: '',
     };
   } catch {
     throw new Error('No se pudo procesar la respuesta de la IA');

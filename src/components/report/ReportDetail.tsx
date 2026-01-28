@@ -7,13 +7,14 @@ import {
   Factory,
   User,
   Target,
+  StickyNote,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExecutiveSection } from './ExecutiveSection';
 import { EditableField } from './EditableField';
+import { EditableList } from './EditableList';
 import type { Report } from '@/types/report';
 
 interface ReportDetailProps {
@@ -42,11 +43,17 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
       {/* 1. Portada */}
       <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-display">
-              {report.portada.zona || 'Zona sin especificar'}
-            </CardTitle>
-            <Badge variant="default" className="text-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-xs text-muted uppercase mb-1">Zona</p>
+              <EditableField
+                value={report.portada.zona}
+                onSave={(value) =>
+                  onUpdate({ portada: { ...report.portada, zona: value } })
+                }
+              />
+            </div>
+            <Badge variant="default" className="text-sm flex-shrink-0">
               {report.portada.semana}
             </Badge>
           </div>
@@ -54,32 +61,44 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
-              <Factory className="h-5 w-5 text-amber-600" />
-              <div>
+              <Factory className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted uppercase">Fábricas</p>
-                <p className="font-semibold">
-                  {report.portada.fabricas.length > 0
-                    ? report.portada.fabricas.join(', ')
-                    : '-'}
-                </p>
+                <EditableField
+                  value={report.portada.fabricas.join(', ')}
+                  onSave={(value) =>
+                    onUpdate({
+                      portada: {
+                        ...report.portada,
+                        fabricas: value.split(',').map((f) => f.trim()).filter(Boolean),
+                      },
+                    })
+                  }
+                />
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
-              <User className="h-5 w-5 text-amber-600" />
-              <div>
+              <User className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted uppercase">Responsable</p>
-                <p className="font-semibold">{report.portada.responsable}</p>
+                <EditableField
+                  value={report.portada.responsable}
+                  onSave={(value) =>
+                    onUpdate({ portada: { ...report.portada, responsable: value } })
+                  }
+                />
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border col-span-1 md:col-span-2">
-              <Target className="h-5 w-5 text-amber-600" />
-              <div className="flex-1">
+              <Target className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted uppercase">Objetivo</p>
                 <EditableField
                   value={report.portada.objetivo}
                   onSave={(value) =>
                     onUpdate({ portada: { ...report.portada, objetivo: value } })
                   }
+                  multiline
                 />
               </div>
             </div>
@@ -98,14 +117,17 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <Droplets className="h-5 w-5 text-blue-600" />
-              <div>
+              <Droplets className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div className="flex-1">
                 <p className="text-xs text-muted uppercase">Litros/Mes</p>
-                <p className="font-semibold">
-                  {report.foto_zona.litros_mes > 0
-                    ? report.foto_zona.litros_mes.toLocaleString('es-ES') + ' L'
-                    : '-'}
-                </p>
+                <EditableField
+                  value={report.foto_zona.litros_mes > 0 ? report.foto_zona.litros_mes.toLocaleString('es-ES') : ''}
+                  onSave={(value) =>
+                    onUpdate({
+                      foto_zona: { ...report.foto_zona, litros_mes: parseInt(value.replace(/\D/g, '')) || 0 },
+                    })
+                  }
+                />
               </div>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg">
@@ -145,27 +167,32 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-slate-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-slate-700">
-                {report.rutas.num_rutas || '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">Rutas</p>
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">Rutas</p>
+              <EditableField
+                value={report.rutas.num_rutas > 0 ? report.rutas.num_rutas.toString() : ''}
+                onSave={(value) =>
+                  onUpdate({ rutas: { ...report.rutas, num_rutas: parseInt(value) || 0 } })
+                }
+              />
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-slate-700">
-                {report.rutas.litros_medios_ruta > 0
-                  ? report.rutas.litros_medios_ruta.toLocaleString('es-ES')
-                  : '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">L/Ruta</p>
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">L/Ruta</p>
+              <EditableField
+                value={report.rutas.litros_medios_ruta > 0 ? report.rutas.litros_medios_ruta.toLocaleString('es-ES') : ''}
+                onSave={(value) =>
+                  onUpdate({ rutas: { ...report.rutas, litros_medios_ruta: parseInt(value.replace(/\D/g, '')) || 0 } })
+                }
+              />
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-slate-700">
-                {report.rutas.distancia_media_km > 0
-                  ? report.rutas.distancia_media_km
-                  : '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">Km Media</p>
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">Km Media</p>
+              <EditableField
+                value={report.rutas.distancia_media_km > 0 ? report.rutas.distancia_media_km.toString() : ''}
+                onSave={(value) =>
+                  onUpdate({ rutas: { ...report.rutas, distancia_media_km: parseInt(value) || 0 } })
+                }
+              />
             </div>
             <div className="p-3 bg-slate-50 rounded-lg">
               <p className="text-xs text-muted uppercase mb-1">Eficiencia</p>
@@ -197,29 +224,32 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-amber-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-amber-700">
-                {report.volumenes.volumen_contratado > 0
-                  ? (report.volumenes.volumen_contratado / 1000).toFixed(0) + 'k'
-                  : '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">L Contratados</p>
+            <div className="p-3 bg-amber-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">L Contratados</p>
+              <EditableField
+                value={report.volumenes.volumen_contratado > 0 ? report.volumenes.volumen_contratado.toLocaleString('es-ES') : ''}
+                onSave={(value) =>
+                  onUpdate({ volumenes: { ...report.volumenes, volumen_contratado: parseInt(value.replace(/\D/g, '')) || 0 } })
+                }
+              />
             </div>
-            <div className="p-3 bg-amber-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-amber-700">
-                {report.volumenes.volumen_real > 0
-                  ? (report.volumenes.volumen_real / 1000).toFixed(0) + 'k'
-                  : '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">L Reales</p>
+            <div className="p-3 bg-amber-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">L Reales</p>
+              <EditableField
+                value={report.volumenes.volumen_real > 0 ? report.volumenes.volumen_real.toLocaleString('es-ES') : ''}
+                onSave={(value) =>
+                  onUpdate({ volumenes: { ...report.volumenes, volumen_real: parseInt(value.replace(/\D/g, '')) || 0 } })
+                }
+              />
             </div>
-            <div className="p-3 bg-amber-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-amber-700">
-                {report.volumenes.pct_contratos_largos > 0
-                  ? report.volumenes.pct_contratos_largos + '%'
-                  : '-'}
-              </p>
-              <p className="text-xs text-muted uppercase">Contratos Largos</p>
+            <div className="p-3 bg-amber-50 rounded-lg">
+              <p className="text-xs text-muted uppercase mb-1">% Contratos Largos</p>
+              <EditableField
+                value={report.volumenes.pct_contratos_largos > 0 ? report.volumenes.pct_contratos_largos.toString() : ''}
+                onSave={(value) =>
+                  onUpdate({ volumenes: { ...report.volumenes, pct_contratos_largos: parseInt(value) || 0 } })
+                }
+              />
             </div>
             <div className="p-3 bg-amber-50 rounded-lg">
               <p className="text-xs text-muted uppercase mb-1">Concentración</p>
@@ -288,34 +318,70 @@ export function ReportDetail({ report, onUpdate, onExport }: ReportDetailProps) 
       </Card>
 
       {/* 6. Riesgos */}
-      <ExecutiveSection
-        type="riesgos"
-        title="Riesgos Detectados"
-        content={report.riesgos}
-        className="bg-orange-50 border-orange-200"
-      />
+      <Card className="border-orange-200">
+        <CardHeader className="bg-orange-50 rounded-t-lg">
+          <CardTitle className="text-base text-orange-700">
+            Riesgos Detectados ({report.riesgos.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <EditableList
+            items={report.riesgos}
+            onSave={(items) => onUpdate({ riesgos: items })}
+            placeholder="Añadir riesgo..."
+            bulletColor="bg-orange-500"
+          />
+        </CardContent>
+      </Card>
 
       {/* 7. Oportunidades */}
-      <ExecutiveSection
-        type="oportunidades"
-        title="Oportunidades y Propuestas"
-        content={report.oportunidades}
-        className="bg-green-50 border-green-200"
-      />
+      <Card className="border-green-200">
+        <CardHeader className="bg-green-50 rounded-t-lg">
+          <CardTitle className="text-base text-green-700">
+            Oportunidades y Propuestas ({report.oportunidades.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <EditableList
+            items={report.oportunidades}
+            onSave={(items) => onUpdate({ oportunidades: items })}
+            placeholder="Añadir oportunidad..."
+            bulletColor="bg-green-500"
+          />
+        </CardContent>
+      </Card>
 
       {/* 8. Cierre Ejecutivo */}
-      {report.cierre_ejecutivo && (
-        <Card className="border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-base">Cierre Ejecutivo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-stone-800 leading-relaxed font-medium">
-              {report.cierre_ejecutivo}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-base">Cierre Ejecutivo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EditableField
+            value={report.cierre_ejecutivo}
+            onSave={(value) => onUpdate({ cierre_ejecutivo: value })}
+            multiline
+          />
+        </CardContent>
+      </Card>
+
+      {/* 9. Notas Adicionales */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <StickyNote className="h-5 w-5 text-amber-600" />
+            Notas Adicionales
+          </CardTitle>
+          <p className="text-xs text-muted">Añade información que hayas olvidado mencionar en el audio</p>
+        </CardHeader>
+        <CardContent>
+          <EditableField
+            value={report.notas_adicionales || ''}
+            onSave={(value) => onUpdate({ notas_adicionales: value })}
+            multiline
+          />
+        </CardContent>
+      </Card>
 
       {/* Transcripción Original */}
       {report.transcripcion_original && (

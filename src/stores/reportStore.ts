@@ -49,6 +49,7 @@ const getDefaultReportDraft = (): ReportDraft => ({
   riesgos: [],
   oportunidades: [],
   cierre_ejecutivo: '',
+  notas_adicionales: '',
 });
 
 export const useReportStore = create<ReportState>()(
