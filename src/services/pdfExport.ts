@@ -281,6 +281,24 @@ export async function exportReportToPDF(report: Report): Promise<void> {
   }
 
   // ========================================
+  // 9. NOTAS ADICIONALES
+  // ========================================
+  if (report.notas_adicionales) {
+    checkPageBreak(30);
+    doc.setFontSize(12);
+    doc.setTextColor(...primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Notas Adicionales', margin, y);
+    doc.setFont('helvetica', 'normal');
+    y += 7;
+
+    doc.setFontSize(10);
+    doc.setTextColor(...textColor);
+    y += addText(report.notas_adicionales, margin, contentWidth);
+    y += 10;
+  }
+
+  // ========================================
   // FOOTER
   // ========================================
   const pageCount = doc.getNumberOfPages();

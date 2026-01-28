@@ -22,6 +22,7 @@ export function exportReportsToExcel(reports: Report[], filename: string = 'repo
     'Num. Riesgos': report.riesgos.length,
     'Num. Oportunidades': report.oportunidades.length,
     'Cierre Ejecutivo': report.cierre_ejecutivo,
+    'Notas Adicionales': report.notas_adicionales || '',
   }));
 
   const wsMain = XLSX.utils.json_to_sheet(mainData);
