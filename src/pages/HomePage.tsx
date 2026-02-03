@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, ChevronRight, Sparkles } from 'lucide-react';
+import { FileText, ChevronRight, Sparkles, Mic, PenLine } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { RecordingPanel } from '@/components/recording';
-import { ReportCard } from '@/components/report';
+import { ReportCard, ManualReportForm } from '@/components/report';
 import { useReportStore } from '@/stores/reportStore';
+import { cn } from '@/lib/utils';
+
+type InputMode = 'voice' | 'manual';
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { reports, deleteReport } = useReportStore();
+  const { reports, deleteReport, cloneReport } = useReportStore();
+  const [inputMode, setInputMode] = useState<InputMode>('voice');
   const latestReport = reports[0];
 
   return (
@@ -23,19 +28,62 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Recording */}
+        {/* New Report Section */}
         <section className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-display text-lg font-semibold text-stone-900">Nuevo Reporte</h2>
-              <p className="text-sm text-stone-500">Graba tu resumen de visita de zona</p>
+              <p className="text-sm text-stone-500">
+                {inputMode === 'voice' ? 'Graba tu resumen de visita de zona' : 'Completa el formulario manualmente'}
+              </p>
             </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium">IA</span>
-            </div>
+            {inputMode === 'voice' && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">IA</span>
+              </div>
+            )}
           </div>
-          <RecordingPanel onReportCreated={(id) => navigate(`/reporte/${id}`)} />
+
+          {/* Mode Tabs */}
+          <div className="flex gap-1 p-1 bg-stone-100 rounded-xl mb-4">
+            <button
+              onClick={() => setInputMode('voice')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
+                inputMode === 'voice'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-500 hover:text-stone-700'
+              )}
+            >
+              <Mic className="h-4 w-4" />
+              Grabar voz
+            </button>
+            <button
+              onClick={() => setInputMode('manual')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
+                inputMode === 'manual'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-500 hover:text-stone-700'
+              )}
+            >
+              <PenLine className="h-4 w-4" />
+              Escribir manual
+            </button>
+          </div>
+
+          {/* Content based on mode */}
+          {inputMode === 'voice' ? (
+            <RecordingPanel onReportCreated={(id) => navigate(`/reporte/${id}`)} />
+          ) : (
+            <div className="bg-white rounded-2xl border border-stone-200 p-4 md:p-6 card-shadow">
+              <ManualReportForm
+                onSuccess={(id) => navigate(`/reporte/${id}`)}
+                onCancel={() => setInputMode('voice')}
+              />
+            </div>
+          )}
         </section>
 
         {/* Latest Report */}
@@ -53,7 +101,11 @@ export function HomePage() {
                 Ver todos<ChevronRight className="h-4 w-4" />
               </button>
             </div>
-            <ReportCard report={latestReport} onDelete={deleteReport} />
+            <ReportCard
+              report={latestReport}
+              onDelete={deleteReport}
+              onClone={cloneReport}
+            />
           </section>
         )}
 

@@ -1,4 +1,5 @@
 import { Menu, Milk } from 'lucide-react';
+import { SyncIndicator } from '@/components/sync';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -19,8 +20,11 @@ export function Header({ onMenuClick }: HeaderProps) {
             <span className="font-semibold text-stone-900 hidden sm:block">Reportes Juli</span>
           </div>
         </div>
-        <div className="text-sm text-stone-500">
-          Compras de leche
+        <div className="flex items-center gap-3">
+          <SyncIndicator />
+          <span className="text-sm text-stone-500 hidden sm:block">
+            Compras de leche
+          </span>
         </div>
       </div>
     </header>

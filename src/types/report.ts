@@ -50,6 +50,9 @@ export interface Report {
   updatedAt: string;
   transcripcion_original: string;
 
+  // Sync with Supabase
+  remote_id?: string;  // UUID from Supabase
+
   // 1. Portada
   portada: Portada;
 

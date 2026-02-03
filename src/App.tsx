@@ -1,15 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header, MobileNav, Sidebar } from '@/components/layout';
+import { MigrationModal } from '@/components/sync';
 import {
   HomePage,
   ReportsPage,
   ReportDetailPage,
   WeeklySummaryPage,
 } from '@/pages';
+import { useReportStore } from '@/stores/reportStore';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showMigration, setShowMigration] = useState(false);
+  const {
+    getLocalOnlyReportsCount,
+    loadFromRemote,
+    setupRealtimeSync,
+    cleanupRealtimeSync,
+  } = useReportStore();
+
+  // Setup sync on mount
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      // Load remote data
+      loadFromRemote();
+
+      // Setup realtime sync
+      setupRealtimeSync();
+
+      // Check for local-only reports to migrate
+      const localCount = getLocalOnlyReportsCount();
+      if (localCount > 0) {
+        setShowMigration(true);
+      }
+
+      return () => {
+        cleanupRealtimeSync();
+      };
+    }
+  }, [loadFromRemote, setupRealtimeSync, cleanupRealtimeSync, getLocalOnlyReportsCount]);
 
   return (
     <BrowserRouter>
@@ -32,6 +63,12 @@ function App() {
           <MobileNav />
         </div>
       </div>
+
+      {/* Migration Modal */}
+      <MigrationModal
+        open={showMigration}
+        onOpenChange={setShowMigration}
+      />
     </BrowserRouter>
   );
 }

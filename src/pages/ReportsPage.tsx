@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useReportStore } from '@/stores/reportStore';
 
 export function ReportsPage() {
-  const { reports, deleteReport } = useReportStore();
+  const { reports, deleteReport, cloneReport } = useReportStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedZona, setSelectedZona] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -133,6 +133,7 @@ export function ReportsPage() {
                       key={report.id}
                       report={report}
                       onDelete={deleteReport}
+                      onClone={cloneReport}
                     />
                   ))}
                 </div>
